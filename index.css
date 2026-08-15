@@ -762,6 +762,16 @@ footer {
     letter-spacing: 0.05em;
 }
 
+.settings-note {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-secondary);
+    background: rgba(6, 182, 212, 0.08);
+    border: 1px solid rgba(6, 182, 212, 0.18);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+}
+
 .settings-grid {
     display: flex;
     flex-direction: column;
@@ -912,6 +922,20 @@ footer {
 
 .chat-message strong {
     color: var(--primary);
+}
+
+.demo-mode-label {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.28);
+    color: #fbbf24;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 /* AI Quotations inside Bubble */
@@ -1517,4 +1541,3 @@ footer {
     display: flex;
     justify-content: space-between;
 }
-

@@ -120,9 +120,19 @@ const i18n = {
         settings_model: "模型 (Model)",
         settings_save: "儲存連線設定",
         settings_success: "✅ <strong>連線設定更新成功！</strong><br>目前端點：<code>{endpoint}</code><br>當前模型：<code>{model}</code>",
+        settings_demo_note: "目前預設為 Demo Mode：不會呼叫任何付費 LLM API。若要啟用完整 LLM 回覆，請填入自己的 API Endpoint、API Key 與 Model。API Key 只會儲存在瀏覽器 localStorage，不會被上傳到本專案或任何中介伺服器；送出聊天時只會由你的瀏覽器直接用於你指定的 API endpoint。",
+        settings_demo_active: "✅ <strong>Demo Mode 已啟用。</strong><br>未偵測到完整 API 設定，因此小Z會使用免費的規則式教學模式，不會呼叫外部 LLM API。",
         chat_welcome_1: "你好，我是 <strong>小Z</strong>，一個 LLM Infra 專家。歡迎來到 LLM 推論與 Token 經濟學互動教學面板！",
         chat_welcome_2: "你可以問我任何關於<strong>解碼 Roofline 模型、最適 Batch Size 推導、MoE 跨機架通訊瓶頸、KV Cache 多級存儲機會成本折算 或是 100 倍超量預訓練</strong>的硬體物理理論與實踐。",
         chat_welcome_3: "更棒的是，你可以直接命令我：<em>「幫我把 Batch Size 改成 512」</em>，或是<em>「切換到 MoE 跨機架崩潰場景」</em>，我會自動幫你在網頁中完成參數調整！你想從哪個話題開始？",
+        chat_demo_notice: "<span class=\"demo-mode-label\">Demo Mode</span><br>目前線上展示預設使用免費規則式 Demo Mode，不會呼叫付費 LLM API。若要啟用完整 LLM 回覆，請點右上角 ⚙️ 填入自己的 API 設定；API Key 只會存在你的瀏覽器 localStorage，不會被上傳到本專案或任何中介伺服器。",
+        demo_prefix: "<span class=\"demo-mode-label\">Demo Mode</span><br><strong>這是免費規則式示範回覆，沒有呼叫外部 LLM API。</strong><br>",
+        demo_control_hint: "我已用 Demo Mode 幫你調整面板參數。你也可以試試：「Batch Size 512」、「切換到長上下文」、「MoE collapse」。",
+        demo_batch_explain: "Batch Size 是推論服務經濟性的核心旋鈕。低 Batch 解碼通常要反覆讀取模型權重，因此容易 memory-bound；提高 Batch 後，同一次權重讀取可服務更多序列，系統會更接近 compute-bound。",
+        demo_kv_explain: "KV Cache 會隨 Batch Size 與 Context Length 線性成長。長上下文下，即使模型權重不變，KV 搬運與保存成本也會快速變成主要瓶頸。",
+        demo_moe_explain: "MoE 只啟用部分專家以降低單 token 計算量，但 expert routing 會引入 All-to-All 通訊。當專家分散到跨機架 GPU 時，網路頻寬與延遲可能吞掉稀疏化帶來的好處。",
+        demo_memory_explain: "Memory-bound 代表每步生成的瓶頸不是 FLOPS，而是把權重與 KV Cache 從 HBM 搬到運算單元的速度。這也是為什麼單使用者 decode 常常無法把 GPU 算力吃滿。",
+        demo_default_explain: "我可以在 Demo Mode 中回答常見教學問題，也能控制幾個預設場景。請試試：解釋 KV Cache、為什麼 memory-bound、Batch Size 512、切換到 MoE collapse、切換到長上下文。",
         chat_placeholder: "詢問小Z物理極限，或讓我設定參數...",
         suggest_optimal: "解釋最適 Batch Size 公式",
         suggest_moe: "什麼是 MoE 的跨機架崩潰？",
@@ -263,9 +273,19 @@ const i18n = {
         settings_model: "Model",
         settings_save: "Save Connection Settings",
         settings_success: "✅ <strong>Connection settings updated!</strong><br>Endpoint: <code>{endpoint}</code><br>Model: <code>{model}</code>",
+        settings_demo_note: "Default hosted behavior is Demo Mode: no paid LLM API is called. To enable full LLM responses, enter your own API Endpoint, API Key, and Model. Your API key is stored only in browser localStorage and is not uploaded to this project or any proxy server; when you send a chat request, your browser uses it directly with the API endpoint you configured.",
+        settings_demo_active: "✅ <strong>Demo Mode is active.</strong><br>No complete API configuration was detected, so Little Z will use the free rule-based teaching mode and will not call an external LLM API.",
         chat_welcome_1: "Hello! I'm <strong>Little Z</strong>, an LLM Infra Expert. Welcome to the LLM Inference & Token Economics Interactive Simulator!",
         chat_welcome_2: "Feel free to ask me anything about <strong>decoding Roofline models, optimal batch size derivations, MoE rack comm bottlenecks, KV Cache multi-tier storage offloading economics, or 100x pretraining overtraining</strong>.",
         chat_welcome_3: "Even better, directly command me: <em>'Set batch size to 512'</em> or <em>'Switch to MoE Rack Collapse scenario'</em>. I will automatically slide the knobs for you in real-time! Where shall we begin?",
+        chat_demo_notice: "<span class=\"demo-mode-label\">Demo Mode</span><br>The hosted demo uses a free rule-based Demo Mode by default and does not call a paid LLM API. To enable full LLM responses, click ⚙️ and enter your own API settings. Your API key stays in browser localStorage and is not uploaded to this project or any proxy server.",
+        demo_prefix: "<span class=\"demo-mode-label\">Demo Mode</span><br><strong>This is a free rule-based demo response. No external LLM API was called.</strong><br>",
+        demo_control_hint: "I updated the dashboard with Demo Mode. You can also try: 'Batch Size 512', 'switch to long context', or 'MoE collapse'.",
+        demo_batch_explain: "Batch size is a core serving-economics knob. Low-batch decoding repeatedly reads model weights, so it is often memory-bound. As batch size rises, each weight read serves more sequences and the workload moves closer to compute-bound.",
+        demo_kv_explain: "KV cache grows linearly with batch size and context length. In long-context inference, even if model weights stay fixed, KV movement and retention cost can become first-order bottlenecks.",
+        demo_moe_explain: "MoE reduces per-token compute by activating only some experts, but expert routing introduces All-to-All communication. When experts span racks, network bandwidth and latency can eat the gains from sparsity.",
+        demo_memory_explain: "Memory-bound means the step is limited less by FLOPS and more by moving weights and KV cache from HBM into the compute units. This is why single-user decode often cannot fully utilize GPU compute.",
+        demo_default_explain: "In Demo Mode I can answer common educational prompts and control a few presets. Try: explain KV cache, why memory-bound, Batch Size 512, switch to MoE collapse, or switch to long context.",
         chat_placeholder: "Ask Little Z about physical limits, or command me to set parameters...",
         suggest_optimal: "Explain optimal batch size formula",
         suggest_moe: "What is MoE cross-rack collapse?",
@@ -1518,6 +1538,7 @@ function renderWelcomeMessage() {
                 <p>${t('chat_welcome_1')}</p>
                 <p>${t('chat_welcome_2')}</p>
                 <p>${t('chat_welcome_3')}</p>
+                <p>${t('chat_demo_notice')}</p>
             </div>
         `;
     }
@@ -1738,7 +1759,9 @@ function initChatbot() {
         const notifyDiv = document.createElement('div');
         notifyDiv.className = 'chat-message ai-message';
         notifyDiv.style.borderLeftColor = 'var(--color-memory)';
-        notifyDiv.innerHTML = t('settings_success', { endpoint: chatbotConfig.endpoint, model: chatbotConfig.model });
+        notifyDiv.innerHTML = hasUserApiConfig()
+            ? t('settings_success', { endpoint: chatbotConfig.endpoint, model: chatbotConfig.model })
+            : t('settings_demo_active');
         chatBody.appendChild(notifyDiv);
         scrollToBottom();
     });
@@ -1774,6 +1797,81 @@ function initChatbot() {
     }
 }
 
+function hasUserApiConfig() {
+    return Boolean(
+        chatbotConfig.endpoint &&
+        chatbotConfig.apiKey &&
+        chatbotConfig.model
+    );
+}
+
+function buildDemoModeResponse(userText) {
+    const normalized = userText.toLowerCase();
+    const params = {};
+    let preset = null;
+    let explanation = t('demo_default_explain');
+
+    const batchMatch = normalized.match(/batch(?:\s*size)?\D{0,12}(\d{1,5})/i);
+    if (batchMatch) {
+        params.batchSize = clampNumber(parseInt(batchMatch[1], 10), 1, 4096);
+        explanation = `${t('demo_batch_explain')}\n\n${t('demo_control_hint')}`;
+    }
+
+    const contextMatch = normalized.match(/(?:context|上下文)\D{0,12}(\d{1,7})\s*(k|m|tokens?)?/i);
+    if (contextMatch) {
+        let contextValue = parseInt(contextMatch[1], 10);
+        const unit = contextMatch[2];
+        if (unit === 'k') contextValue *= 1000;
+        if (unit === 'm') contextValue *= 1000000;
+        params.contextLength = clampNumber(contextValue, 1000, 1000000);
+        explanation = `${t('demo_kv_explain')}\n\n${t('demo_control_hint')}`;
+    }
+
+    if (includesAny(normalized, ['long context', 'long-context', 'context wall', '長上下文', '極長', '上下文牆'])) {
+        preset = 'long-context';
+        explanation = `${t('demo_kv_explain')}\n\n${t('demo_control_hint')}`;
+    } else if (includesAny(normalized, ['moe collapse', 'rack collapse', 'cross-rack', '跨機架', '崩潰'])) {
+        preset = 'moe-collapse';
+        explanation = `${t('demo_moe_explain')}\n\n${t('demo_control_hint')}`;
+    } else if (includesAny(normalized, ['moe optimized', 'comm optimized', 'pipelining', '優化'])) {
+        preset = 'moe-optimized';
+        explanation = `${t('demo_moe_explain')}\n\n${t('demo_control_hint')}`;
+    } else if (includesAny(normalized, ['fast mode', 'low latency', '低延遲', '極速'])) {
+        preset = 'fast-mode';
+        explanation = `${t('demo_memory_explain')}\n\n${t('demo_control_hint')}`;
+    } else if (includesAny(normalized, ['high throughput', 'throughput', '高吞吐'])) {
+        preset = 'high-throughput';
+        explanation = `${t('demo_batch_explain')}\n\n${t('demo_control_hint')}`;
+    } else if (includesAny(normalized, ['kv cache', 'kv-cache', 'cache', '快取', '緩存'])) {
+        explanation = t('demo_kv_explain');
+    } else if (includesAny(normalized, ['moe', 'expert', 'all-to-all', '專家'])) {
+        explanation = t('demo_moe_explain');
+    } else if (includesAny(normalized, ['batch', '批次'])) {
+        explanation = t('demo_batch_explain');
+    } else if (includesAny(normalized, ['memory bound', 'memory-bound', 'bandwidth', '頻寬', '記憶體'])) {
+        explanation = t('demo_memory_explain');
+    }
+
+    let controlBlock = '';
+    if (preset || Object.keys(params).length > 0) {
+        const controlData = { type: 'control' };
+        if (preset) controlData.preset = preset;
+        if (Object.keys(params).length > 0) controlData.params = params;
+        controlBlock = `\n\n\`\`\`json\n${JSON.stringify(controlData, null, 2)}\n\`\`\``;
+    }
+
+    return `${t('demo_prefix')}${explanation}${controlBlock}`;
+}
+
+function includesAny(text, terms) {
+    return terms.some(term => text.includes(term));
+}
+
+function clampNumber(value, min, max) {
+    if (Number.isNaN(value)) return min;
+    return Math.min(Math.max(value, min), max);
+}
+
 // 5. Send Message Core flow
 async function handleUserSendMessage() {
     const chatBody = document.getElementById('chat-body');
@@ -1807,7 +1905,21 @@ async function handleUserSendMessage() {
     chatBody.appendChild(typingDiv);
     scrollToBottom();
 
-    // 4. Fire API Request to user Endpoint with Trailing-Slash handling and Stream support
+    // 4. If user has not configured a full API connection, use free local Demo Mode.
+    if (!hasUserApiConfig()) {
+        window.setTimeout(() => {
+            typingDiv.remove();
+            const demoRawResponse = buildDemoModeResponse(userText);
+            const cleanResponseText = parseAndExecuteAIControl(demoRawResponse);
+            const messageDiv = appendMessageHTML('ai', parseMarkdown(cleanResponseText));
+            renderMessageKaTeX(messageDiv);
+            chatbotHistory.push({ role: 'assistant', content: demoRawResponse });
+            scrollToBottom();
+        }, 350);
+        return;
+    }
+
+    // 5. Fire API Request to user Endpoint with Trailing-Slash handling and Stream support
     try {
         const cleanEndpoint = chatbotConfig.endpoint.replace(/\/+$/, '');
         const response = await fetch(`${cleanEndpoint}/chat/completions`, {
