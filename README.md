@@ -2,6 +2,10 @@
 
 A first-principles, interactive playground and telemetry dashboard designed for LLM infrastructure engineers, developers, and researchers. This visualizer models hardware execution boundaries, memory wall paradoxes, network communication bottlenecks, and the multi-tier storage economics of serving Large Language Models (both Dense and Mixture of Experts architectures).
 
+**Live Demo Website:** [https://zhchin.github.io/llm_infra_visualizer/](https://zhchin.github.io/llm_infra_visualizer/)
+
+This is mainly an educational and intuition-building tool, not a production-grade performance simulator.
+
 ![LLM Infra Visualizer Screenshot](./images/screenshot.png)
 
 

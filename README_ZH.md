@@ -2,6 +2,10 @@
 
 這是一個專為 LLM 基礎設施工程師、開發者及研究人員設計的第一性原理（First Principles）互動式模擬器。本專案能實時模擬硬體運算邊界、記憶體之牆悖論、網路通訊瓶頸，以及在部署 Dense（稠密）與 MoE（混合專家）模型時，KV Cache 的多級存儲（HBM、DDR、SSD）機會成本折算。
 
+**線上互動網站：** [https://zhchin.github.io/llm_infra_visualizer/](https://zhchin.github.io/llm_infra_visualizer/)
+
+This is mainly an educational and intuition-building tool, not a production-grade performance simulator.
+
 ![LLM Infra Visualizer 系統截圖](./images/screenshot.png)
 
 
