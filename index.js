@@ -1271,6 +1271,12 @@ function applyPreset(presetKey) {
         ['moeEfficiency', 'numMoeEfficiency', 'valMoeEfficiency']
     ];
 
+    // Pre-expand activeParams max before setting values so native <input type="range"> never clamps activeParams to an old smaller totalParams max
+    if (preset.totalParams) {
+        elements.activeParams.max = preset.totalParams.toString();
+        elements.numActiveParams.max = preset.totalParams.toString();
+    }
+
     keys.forEach(([sliderId, numberId, labelId]) => {
         let prop = sliderId;
         if (sliderId === 'gpuFlops') prop = 'flops';
@@ -1322,6 +1328,12 @@ function applyScenarioPreset(scenarioKey) {
         ['moeLayers', 'numMoeLayers', 'valMoeLayers'],
         ['moeEfficiency', 'numMoeEfficiency', 'valMoeEfficiency']
     ];
+
+    // Pre-expand activeParams max before setting values so native <input type="range"> never clamps activeParams to an old smaller totalParams max
+    if (preset.totalParams) {
+        elements.activeParams.max = preset.totalParams.toString();
+        elements.numActiveParams.max = preset.totalParams.toString();
+    }
 
     keys.forEach(([sliderId, numberId, labelId]) => {
         let prop = sliderId;
