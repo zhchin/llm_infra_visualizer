@@ -652,25 +652,6 @@ function calculateMetrics() {
     const moeLayers = parseInt(elements.moeLayers.value);
     const moeEfficiency = parseFloat(elements.moeEfficiency.value) / 100.0;
 
-    // A. Compute Time (Seconds per Decode Step)
-    // t_compute = (B * P_active * 2 FLOPs/param) / FLOPS
-    const tCompute = (batchSize * activeParams * 2) / flops;
-
-    // B. Memory Time (Seconds per Decode Step)
-    // t_mem = (P_total * Precision + B * L * KV_size) / Bandwidth
-    const weightFetchBytes = totalParams * precisionBytes;
-    const kvFetchBytes = batchSize * contextLength * kvTokenBytes;
-    const tMem = (weightFetchBytes + kvFetchBytes) / bandwidth;
-
-    // C. Crossover Batch Size (Weights Balance Point)
-    // B_optimal = (FLOPs / Bandwidth) * (P_total / P_active) * (Precision / 2)
-    const bOptimal = (flops / bandwidth) * (totalParams / activeParams) * (precisionBytes / 2);
-
-    // E. Time to First Token (TTFT) / Prefill Latency calculation
-    // TTFT is experienced by a single user request (Prefill Batch Size = 1).
-    // In production, to load large models and ensure acceptable latency, we always deploy on a parallel GPU cluster (Tensor Parallelism).
-    const prefillBatchSize = 1;
-
     // Estimate single GPU HBM capacity (GB) based on memory bandwidth to represent realistic hardware constraints
     let singleGpuHbmGB = 80;
     const bwTB = bandwidth / 1e12;
@@ -680,9 +661,9 @@ function calculateMetrics() {
     else singleGpuHbmGB = 32;                   // TPU class
 
     // 1. Model capacity constraint (Model weight + concurrent KV Cache must fit in HBM)
-    const weightBytes = totalParams * precisionBytes;
-    const totalKvBytes = batchSize * contextLength * kvTokenBytes;
-    const totalMemoryNeededGB = (weightBytes + totalKvBytes) / 1e9;
+    const weightFetchBytes = totalParams * precisionBytes;
+    const kvFetchBytes = batchSize * contextLength * kvTokenBytes;
+    const totalMemoryNeededGB = (weightFetchBytes + kvFetchBytes) / 1e9;
     
     // Estimate minimum cluster size based on memory requirements
     let clusterParallelism = Math.ceil(totalMemoryNeededGB / singleGpuHbmGB);
@@ -711,6 +692,23 @@ function calculateMetrics() {
     const effectiveFlops = flops * clusterParallelism;
     const effectiveBandwidth = bandwidth * clusterParallelism;
 
+    // A. Compute Time (Seconds per Decode Step across TP Cluster)
+    // t_compute = (B * P_active * 2 FLOPs/param) / effectiveFlops
+    const tCompute = (batchSize * activeParams * 2) / effectiveFlops;
+
+    // B. Memory Time (Seconds per Decode Step across TP Cluster)
+    // t_mem = (P_total * Precision + B * L * KV_size) / effectiveBandwidth
+    const tMem = (weightFetchBytes + kvFetchBytes) / effectiveBandwidth;
+
+    // C. Crossover Batch Size (Weights Balance Point)
+    // B_optimal = (FLOPs / Bandwidth) * (P_total / P_active) * (Precision / 2)
+    const bOptimal = (effectiveFlops / effectiveBandwidth) * (totalParams / activeParams) * (precisionBytes / 2);
+
+    // E. Time to First Token (TTFT) / Prefill Latency calculation
+    // TTFT is experienced by a single user request (Prefill Batch Size = 1).
+    // In production, to load large models and ensure acceptable latency, we always deploy on a parallel GPU cluster (Tensor Parallelism).
+    const prefillBatchSize = 1;
+
     const prefillFlops = prefillBatchSize * contextLength * activeParams * 2;
     const tPrefillCompute = prefillFlops / effectiveFlops;
     
@@ -736,8 +734,8 @@ function calculateMetrics() {
     }
 
     // Dynamic Alert Banner Update
-    const weightFetchTime = weightFetchBytes / bandwidth;
-    const kvFetchTime = kvFetchBytes / bandwidth;
+    const weightFetchTime = weightFetchBytes / effectiveBandwidth;
+    const kvFetchTime = kvFetchBytes / effectiveBandwidth;
     const memoryTotalTime = weightFetchTime + kvFetchTime;
     
     if (tCompute > tMem) {
@@ -886,7 +884,7 @@ function calculateMetrics() {
     }
 
     // Refresh Roofline Interactive Chart
-    updateRooflineChart(flops, bandwidth, totalParams, activeParams, precisionBytes, contextLength, kvTokenBytes, batchSize);
+    updateRooflineChart(effectiveFlops, effectiveBandwidth, totalParams, activeParams, precisionBytes, contextLength, kvTokenBytes, batchSize);
 
     // Calculate KV Cache Offload Storage Economics
     calculateOffloadEconomics(effectiveFlops, effectiveBandwidth, clusterParallelism, singleGpuHbmGB);
