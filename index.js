@@ -1514,6 +1514,9 @@ function switchLanguage(lang) {
 
     // Re-run calculateMetrics to refresh dynamic calculations and chart text
     calculateMetrics();
+
+    // Re-render inline & display math inside educational section after i18n innerHTML replacement
+    initMathRenderer();
 }
 
 function updateSystemPrompt() {
@@ -1556,8 +1559,9 @@ function renderWelcomeMessage() {
 
 // 8. KaTeX Auto-Renderer Initialization
 function initMathRenderer() {
-    if (typeof renderMathInElement === 'function') {
-        renderMathInElement(document.body, {
+    const eduSection = document.querySelector('.edu-section');
+    if (typeof renderMathInElement === 'function' && eduSection) {
+        renderMathInElement(eduSection, {
             delimiters: [
                 {left: '$$', right: '$$', display: true},
                 {left: '$', right: '$', display: false}
@@ -1567,8 +1571,9 @@ function initMathRenderer() {
     } else if (window.katex) {
         // Fallback manual render for math blocks if auto-render deferred too long
         document.querySelectorAll('.formula-display').forEach(el => {
-            const math = el.textContent.trim().replace(/^\$\$|\$\$$/g, '');
-            window.katex.render(math, el, { displayMode: true, throwOnError: false });
+            const rawMath = el.getAttribute('data-raw-math') || el.textContent.trim().replace(/^\$\$|\$\$$/g, '');
+            el.setAttribute('data-raw-math', rawMath);
+            window.katex.render(rawMath, el, { displayMode: true, throwOnError: false });
         });
     }
 }
